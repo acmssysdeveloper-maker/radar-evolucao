@@ -1,0 +1,32 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="css/styles.css"><title>Meu resultado | Radar de Evolução</title></head><body><header class="topbar"><div class="wrap topbar-inner"><a class="brand" href="index.html"><i class="brand-dot"></i>Radar de Evolução</a><nav class="nav"><a href="radar.html">O Radar</a><a href="relatorio.html">Relatório</a><a href="contato.html">Contato</a></nav></div></header><main><section class="context-section"><div class="wrap" data-context-panel></div></section><section class="section"><div class="wrap"><div id="empty" style="display:none"><div class="section-head"><div class="eyebrow">Ainda não há avaliação nesta sessão</div><h1>Seu resultado aparecerá aqui.</h1><p>Faça o diagnóstico para gerar seu radar.</p><a class="btn btn-gold" href="diagnostico.html">Começar diagnóstico</a></div></div><div id="content"><div class="section-head"><div class="eyebrow">Seu diagnóstico</div><h1>Veja o que seu radar está mostrando.</h1><p>Este resultado é uma leitura do momento informado por você. Ele ganha mais valor quando comparado com uma nova avaliação depois de um ciclo de ação.</p></div><div class="result-grid">
+<div class="result-card score-card">
+  <div class="mini">Índice geral de evolução</div>
+  <div class="score" id="score"></div>
+  <div class="level" id="level"></div>
+  <h3 id="levelTitle">O que este nível significa</h3>
+  <p id="summary"></p>
+  <div class="result-callout"><strong id="attentionTitle">Onde olhar agora</strong><span id="attentionText"></span></div>
+  <div class="axis-list" id="axes"></div>
+</div>
+<div class="result-card radar-wrap">
+  <div class="wheel-heading"><div><div class="mini">Roda de Evolução</div><h3>O equilíbrio importa mais que a nota isolada.</h3><p>Quanto mais distante do centro, maior a presença daquela capacidade hoje.</p></div><div class="wheel-legend"><span><i class="dot-fill"></i> Seu resultado</span><span><i class="dot-scale"></i> Escala 0–10</span></div></div>
+  <svg id="radar"></svg>
+  <div class="wheel-footer" id="wheelFooter"></div>
+</div>
+</div><div class="actions" style="margin-top:22px"><a class="btn btn-gold" href="relatorio.html">Gerar meu relatório</a><a class="btn btn-dark" id="wa" target="_blank" rel="noopener">Falar sobre este resultado</a><a class="btn btn-secondary" href="diagnostico.html">Refazer avaliação</a></div></div></div></section></main><script src="config.js"></script><script src="js/contexto.js"></script><script src="js/data.js"></script><script src="js/core.js"></script><script src="js/radar-chart.js"></script><script>
+(function(){
+ const s=RadarCore.get();
+ if(!s){document.getElementById('empty').style.display='block';document.getElementById('content').style.display='none';return}
+ const score=Number(s.scores.overall||0), dimVals=s.scores.dimensions;
+ document.getElementById('score').textContent=RadarCore.fmt(score);
+ document.getElementById('level').textContent=s.level.name;
+ document.getElementById('summary').textContent=s.level.desc;
+ const sorted=RADAR_DATA.dimensions.map(d=>({d,score:Number(dimVals[d.id]||0)})).sort((a,b)=>b.score-a.score);
+ const high=sorted.slice(0,2), low=sorted.slice(-3).reverse(), gap=sorted[0].score-sorted[sorted.length-1].score;
+ document.getElementById('attentionText').textContent=` ${low[0].d.short} (${RadarCore.fmt(low[0].score)}) é o principal ponto de atenção. A maior distância interna do radar é de ${RadarCore.fmt(gap)} ponto(s).`;
+ document.getElementById('axes').innerHTML=RADAR_DATA.dimensions.map(d=>`<div class="axis-item"><span>${d.name}</span><strong>${RadarCore.fmt(dimVals[d.id])}/10</strong></div>`).join('');
+ document.getElementById('wheelFooter').textContent=`Forças relativas: ${high.map(x=>x.d.short).join(' e ')}. Pontos de atenção: ${low.map(x=>x.d.short).join(', ')}.`;
+ document.getElementById('wa').href=RadarCore.whatsappUrl(s);
+ RadarChart.draw('radar',dimVals,{overall:score});
+})();
+</script></script></body></html>

@@ -1,0 +1,70 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="css/styles.css"><title>Diagnóstico | Radar de Evolução</title></head><body><header class="topbar"><div class="wrap topbar-inner"><a class="brand" href="index.html"><i class="brand-dot"></i>Radar de Evolução</a><nav class="nav"><a href="sobre.html">Sobre</a><a href="radar.html">O Radar</a><a href="resultado.html">Meu resultado</a></nav></div></header><main><section class="context-section"><div class="wrap" data-context-panel></div></section><section class="section"><div class="wrap"><div class="section-head"><div class="eyebrow">Radar de Evolução • 24 perguntas</div><h1>Avalie a realidade, não a intenção.</h1><p>Escolha a resposta que mais se aproxima do que acontece hoje. Cada resposta é convertida para uma escala de 0 a 10. A média das respostas forma a pontuação de cada dimensão e, ao final, o índice geral.</p></div><div class="quiz-shell" id="quiz"><div class="progress-top"><span id="progress-text">Pergunta 1 de 24</span><span id="progress-pct">0%</span></div><div class="progress-hint" id="progress-hint">Comece pela realidade da sua empresa. Não existe resposta certa.</div><div class="progress"><i id="progress-bar"></i></div><div class="dimension" id="dimension"></div><div class="question" id="question"></div><div class="qhelp" id="qhelp"></div><div class="options" id="options"></div><div class="diag-actions"><button class="btn btn-secondary" id="prev" type="button">Voltar</button><button class="btn btn-gold" id="next" type="button">Próxima</button></div></div></div></section></main><script src="config.js"></script><script src="js/contexto.js"></script><script src="js/data.js"></script><script src="js/core.js"></script><script>
+(function(){
+  const QUIZ_STATE_KEY='radar_quiz_state_v21';
+  let i=0;
+  const q=RADAR_DATA.questions;
+  const saved=(()=>{try{return JSON.parse(sessionStorage.getItem(QUIZ_STATE_KEY)||'null')}catch(_){return null}})();
+  let answers=Array.isArray(saved?.answers)&&saved.answers.length===q.length?saved.answers:Array(q.length).fill(null);
+  if(Number.isInteger(saved?.index)&&saved.index>=0&&saved.index<q.length){i=saved.index}
+  const el=id=>document.getElementById(id);
+
+  function persist(){
+    try{sessionStorage.setItem(QUIZ_STATE_KEY,JSON.stringify({index:i,answers,updatedAt:new Date().toISOString()}))}catch(_){}
+  }
+
+  function render(){
+    const item=q[i],d=RADAR_DATA.dimensions.find(x=>x.id===item[0]);
+    el('progress-text').textContent=`Pergunta ${i+1} de ${q.length}`;
+    const pct=Math.round((i+1)/q.length*100);
+    el('progress-pct').textContent=pct+'%';
+    el('progress-bar').style.width=pct+'%';
+    el('dimension').textContent=d.name;
+    el('question').textContent=item[1];
+    el('qhelp').textContent=item[2];
+    el('options').innerHTML=item[3].map((t,n)=>`<label class="option ${answers[i]===n?'selected':''}"><input type="radio" name="a" value="${n}" ${answers[i]===n?'checked':''}><span><strong>${n} — ${t}</strong></span></label>`).join('');
+    document.querySelectorAll('.option input').forEach(r=>r.onchange=e=>{
+      answers[i]=Number(e.target.value);
+      persist();
+      render();
+    });
+    el('prev').style.visibility=i?'visible':'hidden';
+    el('next').textContent=i===q.length-1?'Ver meu resultado':'Próxima';
+    persist();
+  }
+
+  function moveQuestion(direction){
+    const currentY=window.scrollY;
+    i=Math.max(0,Math.min(q.length-1,i+direction));
+    render();
+    // Preserve the user's reading position. Do not force the page to the top.
+    requestAnimationFrame(()=>{window.scrollTo(0,currentY);el('question').focus({preventScroll:true})});
+  }
+
+  el('prev').onclick=()=>{
+    if(i>0) moveQuestion(-1);
+  };
+
+  el('next').onclick=()=>{
+    if(answers[i]===null){
+      alert('Escolha uma resposta para continuar.');
+      const first=el('options').querySelector('input');
+      if(first) first.focus({preventScroll:true});
+      return;
+    }
+    if(i<q.length-1){
+      moveQuestion(1);
+      return;
+    }
+
+    const scores=RadarCore.scoresFromAnswers(answers);
+    const session={id:RadarCore.createId(),createdAt:new Date().toISOString(),answers,scores,level:RadarCore.scoreLevel(scores.overall),insight:RadarCore.insight(scores),lead:null,events:[{type:'diagnostico_concluido',at:new Date().toISOString()}]};
+    RadarCore.set(session);
+    try{sessionStorage.removeItem(QUIZ_STATE_KEY)}catch(_){}
+    location.href='resultado.html';
+  };
+
+  // Navegação entre páginas segue o comportamento normal do navegador; somente a troca de pergunta preserva a posição.
+  el('question').setAttribute('tabindex','-1');
+  render();
+})();
+</script></body></html>

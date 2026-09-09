@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/styles.css">
+<title>Relatório | Radar de Evolução</title>
+<style>
+.report-page{width:min(1120px,calc(100% - 28px));margin:28px auto 50px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);border-radius:24px;padding:34px}
+.report-top{display:grid;grid-template-columns:1fr 170px;gap:24px;align-items:end;padding-bottom:18px;border-bottom:2px solid var(--gold)}
+.report-kicker{font-size:.73rem;letter-spacing:.14em;text-transform:uppercase;color:#80640f;font-weight:850}
+.report-title{font:600 clamp(2.3rem,4vw,4.25rem)/.95 Georgia,serif;letter-spacing:-.03em;margin:7px 0 8px}
+.report-meta{font-size:.83rem;color:#777}
+.report-index{text-align:right}.report-index .mini{color:#80640f}.report-index .score{font-size:3.5rem;margin:4px 0}.report-index .level{margin:0}
+.report-summary{font-size:1rem;line-height:1.5;margin:17px 0 20px;max-width:980px;color:#3f3d38}
+.report-main{display:grid;grid-template-columns:1.06fr .94fr;gap:22px;align-items:stretch}
+.report-wheel-card,.report-dims-card{border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,#fff,#fcfbf5);padding:20px}
+.report-card-kicker{font-size:.69rem;letter-spacing:.13em;text-transform:uppercase;color:#80640f;font-weight:850}
+.report-card-title{font:600 1.55rem/1.05 Georgia,serif;margin:5px 0 6px}.report-card-sub{font-size:.82rem;color:#777;margin-bottom:8px}
+.report-radar-frame{display:flex;justify-content:center;align-items:center;height:310px}.report-radar-frame svg{width:100%;max-width:360px;height:auto}
+.report-radar-caption{font-size:.72rem;color:#7a766d;text-align:center;margin-top:-2px}
+.report-dims{display:grid;grid-template-columns:1fr 1fr;gap:7px 18px;margin-top:14px}
+.report-dim{padding:9px 0;border-bottom:1px solid #ece8dd}.report-dim-name{font-size:.79rem;color:#444;display:block;white-space:nowrap}.report-dim-row{display:flex;align-items:center;gap:9px;margin-top:5px}.report-dim-bar{height:7px;flex:1;background:#ece9df;border-radius:99px;overflow:hidden}.report-dim-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:99px}.report-dim-score{font-weight:850;font-size:.8rem;min-width:34px;text-align:right}
+.report-bottom{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:18px}.report-insight,.report-next{border:1px solid var(--line);border-radius:18px;padding:16px 18px}.report-insight{background:#faf7ea;border-left:3px solid var(--gold)}.report-next{background:#171717;color:#fff}.report-bottom h3{font-size:1rem;margin-bottom:7px}.report-bottom p{font-size:.82rem;margin:0;line-height:1.45}.report-next p{color:#d8d8d8}.report-foot{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-top:13px;color:#777;font-size:.7rem}.no-print{ }
+
+@media(max-width:800px){.report-top,.report-main,.report-bottom{grid-template-columns:1fr}.report-index{text-align:left}.report-dims{grid-template-columns:1fr}.report-radar-frame{height:auto}.report-page{padding:22px}}
+
+@media print{
+  @page{size:A4 portrait;margin:0}
+  html,body{width:210mm;height:297mm;margin:0!important;padding:0!important;background:#fff!important}
+  body{font-family:Arial,Helvetica,sans-serif!important;color:#202020!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;overflow:hidden}
+  .no-print,.topbar,header,nav,footer{display:none!important}
+  main{margin:0!important;padding:0!important}
+  .report-page{display:block!important;width:210mm!important;height:297mm!important;margin:0!important;padding:11mm 13mm 10mm!important;border:0!important;box-shadow:none!important;border-radius:0!important;overflow:hidden!important}
+  .report-top{grid-template-columns:1fr 36mm!important;gap:7mm!important;padding-bottom:4mm!important;border-bottom:1.6px solid #d6b43d!important}
+  .report-kicker{font-size:7.4pt!important;letter-spacing:.13em!important}.report-title{font-size:25pt!important;line-height:.95!important;margin:2mm 0 1.6mm!important}.report-meta{font-size:7.5pt!important}
+  .report-index .mini{font-size:7.5pt!important}.report-index .score{font-size:30pt!important;margin:1mm 0!important}.report-index .level{font-size:7pt!important;padding:1.5mm 2.5mm!important;margin:0!important}
+  .report-summary{font-size:8.9pt!important;line-height:1.35!important;margin:3.5mm 0!important;max-width:none!important}
+  .report-main{grid-template-columns:1.03fr .97fr!important;gap:4mm!important;align-items:stretch!important}
+  .report-wheel-card,.report-dims-card{border:1px solid #e6e0cf!important;border-radius:4mm!important;padding:4mm!important;break-inside:avoid!important}
+  .report-card-kicker{font-size:6.7pt!important}.report-card-title{font-size:13.2pt!important;margin:1mm 0!important}.report-card-sub{font-size:7.1pt!important;margin-bottom:1mm!important}
+  .report-radar-frame{height:80mm!important}.report-radar-frame svg{max-width:85mm!important}.report-radar-caption{font-size:6.5pt!important}
+  .report-dims{grid-template-columns:1fr!important;gap:0!important;margin-top:2mm!important}.report-dim{padding:1.6mm 0!important}.report-dim-name{font-size:7.2pt!important}.report-dim-row{margin-top:1mm!important;gap:2mm!important}.report-dim-bar{height:1.6mm!important}.report-dim-score{font-size:7pt!important;min-width:9mm!important}
+  .report-bottom{grid-template-columns:1.08fr .92fr!important;gap:4mm!important;margin-top:4mm!important}.report-insight,.report-next{padding:3mm 3.5mm!important;border-radius:3.5mm!important;break-inside:avoid!important}.report-bottom h3{font-size:8.4pt!important;margin-bottom:1.2mm!important}.report-bottom p{font-size:7pt!important;line-height:1.35!important}.report-foot{font-size:6.2pt!important;margin-top:2.5mm!important}
+  .report-page *{box-sizing:border-box!important}
+}
+</style>
+</head>
+<body>
+<header class="topbar no-print"><div class="wrap topbar-inner"><a class="brand" href="index.html"><i class="brand-dot"></i>Radar de Evolução</a><nav class="nav"><a href="resultado.html">Resultado</a><a href="contato.html">Contato</a></nav></div></header>
+<main>
+  <section class="report-page" id="report">
+    <div class="report-top">
+      <div>
+        <div class="report-kicker">Relatório Radar de Evolução</div>
+        <div class="report-title">Leitura do momento</div>
+        <div class="report-meta" id="meta"></div>
+      </div>
+      <div class="report-index">
+        <div class="mini">Índice geral</div>
+        <div class="score" id="rscore">-</div>
+        <div class="level" id="rlevel">-</div>
+      </div>
+    </div>
+
+    <p class="report-summary" id="rsummary"></p>
+
+    <div class="report-main">
+      <div class="report-wheel-card">
+        <div class="report-card-kicker">Roda de Evolução</div>
+        <div class="report-card-title">O equilíbrio entre capacidades importa.</div>
+        <div class="report-card-sub">Quanto mais distante do centro, maior a presença daquela capacidade na avaliação.</div>
+        <div class="report-radar-frame"><svg id="reportRadar"></svg></div>
+        <div class="report-radar-caption">Escala de 0 a 10 • resultado informado nesta avaliação</div>
+      </div>
+      <div class="report-dims-card">
+        <div class="report-card-kicker">As 8 dimensões</div>
+        <div class="report-card-title">Onde estão suas forças e seus gaps.</div>
+        <div class="report-card-sub">A leitura é relativa ao conjunto das oito dimensões.</div>
+        <div class="report-dims" id="dims"></div>
+      </div>
+    </div>
+
+    <div class="report-bottom">
+      <div class="report-insight"><h3>Leitura prioritária</h3><p id="rinsight"></p></div>
+      <div class="report-next"><h3>Próximo passo</h3><p>Use este resultado como linha de base. O valor do Radar aumenta quando os pontos prioritários viram ações observáveis e são reavaliados posteriormente.</p></div>
+    </div>
+    <div class="report-foot"><span>Radar de Evolução • Ferramenta de reflexão e acompanhamento</span><span id="footId"></span></div>
+  </section>
+
+  <section class="section no-print" style="padding-top:0"><div class="wrap" style="max-width:950px;padding:0"><div class="lead-panel" style="display:block"><h3>Registrar o diagnóstico e liberar o PDF</h3><p>Os dados abaixo são usados para vincular o relatório ao histórico do CRM. Com o endpoint do Google Apps Script configurado, o registro será enviado à planilha.</p><form id="leadForm"><div class="form-grid"><div class="field"><label>Nome *</label><input id="name" required></div><div class="field"><label>Empresa / negócio *</label><input id="company" required></div><div class="field"><label>E-mail *</label><input id="email" type="email" required></div><div class="field"><label>WhatsApp</label><input id="phone" value=""></div><div class="field"><label>Cargo / função</label><input id="role"></div><div class="field"><label>Origem</label><select id="source"><option>Landing page</option><option>LinkedIn</option><option>WhatsApp</option><option>Indicação</option><option>Outro</option></select></div></div><label class="check"><input id="consent" type="checkbox" required><span>Concordo com o registro dos dados para atendimento e acompanhamento do diagnóstico, conforme a política de privacidade.</span></label><div class="privacy-note">Você pode publicar esta página com uma política de privacidade própria em <a href="privacidade.html">Privacidade</a>.</div><div class="actions"><button class="btn btn-gold" type="submit">Registrar e preparar PDF</button><button class="btn btn-secondary" type="button" onclick="window.print()">Imprimir / Salvar PDF</button></div><div class="status" id="status">Aguardando cadastro.</div></form></div></div></section>
+</main>
+<script src="config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/core.js"></script>
+<script src="js/radar-chart.js"></script>
+<script src="js/api.js"></script>
+<script>
+(function(){
+  const s=RadarCore.get();
+  if(!s){location.href='diagnostico.html';return}
+  const created=new Date(s.createdAt);
+  document.getElementById('meta').textContent=`ID ${s.id} • ${created.toLocaleDateString('pt-BR')}`;
+  document.getElementById('footId').textContent=s.id;
+  document.getElementById('rscore').textContent=RadarCore.fmt(s.scores.overall);
+  document.getElementById('rlevel').textContent=s.level.name;
+  document.getElementById('rsummary').textContent=s.level.desc;
+  const sorted=RADAR_DATA.dimensions.map(d=>({d,score:Number(s.scores.dimensions[d.id]||0)})).sort((a,b)=>b.score-a.score);
+  document.getElementById('rinsight').textContent=`Sua maior força relativa está em ${sorted.slice(0,2).map(x=>x.d.short.toLowerCase()).join(' e ')}. Os pontos que merecem atenção prioritária aparecem em ${sorted.slice(-3).reverse().map(x=>x.d.short.toLowerCase()).join(', ')}.`;
+  document.getElementById('dims').innerHTML=RADAR_DATA.dimensions.map(d=>{const v=Number(s.scores.dimensions[d.id]||0);return `<div class="report-dim"><span class="report-dim-name">${d.name}</span><div class="report-dim-row"><div class="report-dim-bar"><i style="width:${Math.max(0,Math.min(100,v*10))}%"></i></div><span class="report-dim-score">${RadarCore.fmt(v)}</span></div></div>`}).join('');
+  RadarChart.draw('reportRadar',s.scores.dimensions,{overall:s.scores.overall,animate:false});
+  document.getElementById('leadForm').onsubmit=async e=>{
+    e.preventDefault();
+    if(!document.getElementById('consent').checked)return;
+    const lead={name:document.getElementById('name').value.trim(),company:document.getElementById('company').value.trim(),email:document.getElementById('email').value.trim(),phone:document.getElementById('phone').value.trim(),role:document.getElementById('role').value.trim(),source:document.getElementById('source').value};
+    s.lead=lead;s.events=s.events||[];s.events.push({type:'lead_registrado',at:new Date().toISOString()});RadarCore.set(s);
+    const status=document.getElementById('status');status.textContent='Registrando...';
+    const payload=JSON.parse(JSON.stringify(s));payload.questions=RADAR_DATA.questions.map((q,i)=>({text:q[1],dimension:RADAR_DATA.dimensions.find(d=>d.id===q[0]).name,value:s.answers[i]}));
+    const res=await RadarApi.send({action:'saveDiagnosis',session:payload});
+    if(res.ok){status.textContent='Diagnóstico registrado. Você pode salvar o relatório em PDF.';document.getElementById('leadForm').insertAdjacentHTML('beforeend',`<div class="actions"><a class="btn btn-dark" target="_blank" rel="noopener" href="${RadarCore.whatsappUrl(s)}">Levar resultado ao WhatsApp</a></div>`)}
+    else{status.textContent='Modo local: o cadastro ficou salvo nesta sessão. Configure o Google Apps Script para enviar ao CRM.'}
+  };
+})();
+</script>
+</body>
+</html>
