@@ -89,7 +89,7 @@
     <div class="report-foot"><span>Radar de Evolução • Ferramenta de reflexão e acompanhamento</span><span id="footId"></span></div>
   </section>
 
-  <section class="section no-print" style="padding-top:0"><div class="wrap" style="max-width:950px;padding:0"><div class="lead-panel" style="display:block"><h3>Registrar o diagnóstico e liberar o PDF</h3><p>Os dados abaixo são usados para vincular o relatório ao histórico do CRM. Com o endpoint do Google Apps Script configurado, o registro será enviado à planilha.</p><form id="leadForm"><div class="form-grid"><div class="field"><label>Nome *</label><input id="name" required></div><div class="field"><label>Empresa / negócio *</label><input id="company" required></div><div class="field"><label>E-mail *</label><input id="email" type="email" required></div><div class="field"><label>WhatsApp</label><input id="phone" value=""></div><div class="field"><label>Cargo / função</label><input id="role"></div><div class="field"><label>Origem</label><select id="source"><option>Landing page</option><option>LinkedIn</option><option>WhatsApp</option><option>Indicação</option><option>Outro</option></select></div></div><label class="check"><input id="consent" type="checkbox" required><span>Concordo com o registro dos dados para atendimento e acompanhamento do diagnóstico, conforme a política de privacidade.</span></label><div class="privacy-note">Você pode publicar esta página com uma política de privacidade própria em <a href="privacidade.html">Privacidade</a>.</div><div class="actions"><button class="btn btn-gold" type="submit">Registrar e preparar PDF</button><button class="btn btn-secondary" type="button" onclick="window.print()">Imprimir / Salvar PDF</button></div><div class="status" id="status">Aguardando cadastro.</div></form></div></div></section>
+  <section class="section no-print" style="padding-top:0"><div class="wrap" style="max-width:950px;padding:0"><div class="lead-panel" style="display:block"><h3>Registrar o diagnóstico e liberar o PDF</h3><p>Os dados abaixo são usados para vincular o relatório ao histórico do CRM. Com o endpoint do Google Apps Script configurado, o registro será enviado à planilha.</p><form id="leadForm"><div class="form-grid"><div class="field"><label>Nome *</label><input id="name" required></div><div class="field"><label>Empresa / negócio *</label><input id="company" required></div><div class="field"><label>E-mail *</label><input id="email" type="email" required></div><div class="field"><label>WhatsApp</label><input id="phone" value=""></div><div class="field"><label>Cargo / função</label><input id="role"></div><div class="field"><label>Origem</label><select id="source"><option>Landing page</option><option>LinkedIn</option><option>WhatsApp</option><option>Indicação</option><option>Outro</option></select></div></div><label class="check"><input id="consent" type="checkbox" required><span>Concordo com o registro dos dados para atendimento e acompanhamento do diagnóstico, conforme a política de privacidade.</span></label><div class="privacy-note">Você pode publicar esta página com uma política de privacidade própria em <a href="privacidade.html">Privacidade</a>.</div><div class="actions"><button class="btn btn-gold" type="submit">Registrar e preparar PDF</button><button class="btn btn-secondary" id="printBtn" type="button" disabled>Imprimir / Salvar PDF</button></div><div class="status" id="status">Aguardando cadastro.</div><div class="progress-hint" id="saveSteps" aria-live="polite"></div><div id="crmHint" style="margin-top:8px;font-size:.88rem;color:#756f66"></div></form></div></div></section>
 </main>
 <script src="config.js"></script>
 <script src="js/data.js"></script>
@@ -101,25 +101,63 @@
   const s=RadarCore.get();
   if(!s){location.href='diagnostico.html';return}
   const created=new Date(s.createdAt);
-  document.getElementById('meta').textContent=`ID ${s.id} • ${created.toLocaleDateString('pt-BR')}`;
-  document.getElementById('footId').textContent=s.id;
-  document.getElementById('rscore').textContent=RadarCore.fmt(s.scores.overall);
-  document.getElementById('rlevel').textContent=s.level.name;
-  document.getElementById('rsummary').textContent=s.level.desc;
+  const el=id=>document.getElementById(id);
+  el('meta').textContent=`ID ${s.id} • ${created.toLocaleDateString('pt-BR')}`;
+  el('footId').textContent=s.id;
+  el('rscore').textContent=RadarCore.fmt(s.scores.overall);
+  el('rlevel').textContent=s.level.name;
+  el('rsummary').textContent=s.level.desc;
   const sorted=RADAR_DATA.dimensions.map(d=>({d,score:Number(s.scores.dimensions[d.id]||0)})).sort((a,b)=>b.score-a.score);
-  document.getElementById('rinsight').textContent=`Sua maior força relativa está em ${sorted.slice(0,2).map(x=>x.d.short.toLowerCase()).join(' e ')}. Os pontos que merecem atenção prioritária aparecem em ${sorted.slice(-3).reverse().map(x=>x.d.short.toLowerCase()).join(', ')}.`;
-  document.getElementById('dims').innerHTML=RADAR_DATA.dimensions.map(d=>{const v=Number(s.scores.dimensions[d.id]||0);return `<div class="report-dim"><span class="report-dim-name">${d.name}</span><div class="report-dim-row"><div class="report-dim-bar"><i style="width:${Math.max(0,Math.min(100,v*10))}%"></i></div><span class="report-dim-score">${RadarCore.fmt(v)}</span></div></div>`}).join('');
+  el('rinsight').textContent=`Sua maior força relativa está em ${sorted.slice(0,2).map(x=>x.d.short.toLowerCase()).join(' e ')}. Os pontos que merecem atenção prioritária aparecem em ${sorted.slice(-3).reverse().map(x=>x.d.short.toLowerCase()).join(', ')}.`;
+  el('dims').innerHTML=RADAR_DATA.dimensions.map(d=>{const v=Number(s.scores.dimensions[d.id]||0);return `<div class="report-dim"><span class="report-dim-name">${d.name}</span><div class="report-dim-row"><div class="report-dim-bar"><i style="width:${Math.max(0,Math.min(100,v*10))}%"></i></div><span class="report-dim-score">${RadarCore.fmt(v)}</span></div></div>`}).join('');
   RadarChart.draw('reportRadar',s.scores.dimensions,{overall:s.scores.overall,animate:false});
+
+  const status=el('status'), hint=el('crmHint'), steps=el('saveSteps'), printBtn=el('printBtn'), submitBtn=document.querySelector('#leadForm button[type="submit"]');
+  const crmReady=RadarApi.configured();
+  if(crmReady){hint.textContent='CRM conectado: ao registrar, este diagnóstico será associado ao histórico da pessoa/empresa.';} else {hint.textContent='CRM ainda não conectado. O cadastro não será enviado ao Google Sheets até que a URL do Apps Script seja configurada em config.js.';}
+  const alreadySaved=Boolean(s.crmSavedAt&&s.crmLeadId);
+  if(alreadySaved){
+    status.textContent='Este diagnóstico já foi registrado nesta sessão.';
+    steps.textContent='✓ Avaliação concluída  •  ✓ Registro realizado  •  ✓ Relatório liberado';
+    printBtn.disabled=false;
+    submitBtn.disabled=true;
+  }
+
+  printBtn.addEventListener('click',()=>{
+    if(printBtn.disabled)return;
+    s.events=s.events||[];s.events.push({type:'pdf_imprimir_iniciado',at:new Date().toISOString()});RadarCore.set(s);
+    RadarApi.event({type:'pdf_imprimir_iniciado',at:new Date().toISOString(),diagnosticoId:s.id,leadId:s.crmLeadId||''});
+    window.print();
+  });
+
   document.getElementById('leadForm').onsubmit=async e=>{
     e.preventDefault();
-    if(!document.getElementById('consent').checked)return;
-    const lead={name:document.getElementById('name').value.trim(),company:document.getElementById('company').value.trim(),email:document.getElementById('email').value.trim(),phone:document.getElementById('phone').value.trim(),role:document.getElementById('role').value.trim(),source:document.getElementById('source').value};
-    s.lead=lead;s.events=s.events||[];s.events.push({type:'lead_registrado',at:new Date().toISOString()});RadarCore.set(s);
-    const status=document.getElementById('status');status.textContent='Registrando...';
-    const payload=JSON.parse(JSON.stringify(s));payload.questions=RADAR_DATA.questions.map((q,i)=>({text:q[1],dimension:RADAR_DATA.dimensions.find(d=>d.id===q[0]).name,value:s.answers[i]}));
+    if(!el('consent').checked)return;
+    if(!crmReady){status.textContent='O cadastro ainda não pode ser enviado: o CRM não está configurado.';hint.scrollIntoView({behavior:'smooth',block:'center'});return;}
+    if(s.crmSavedAt&&s.crmLeadId){printBtn.disabled=false;return;}
+    const lead={name:el('name').value.trim(),company:el('company').value.trim(),email:el('email').value.trim(),phone:el('phone').value.trim(),role:el('role').value.trim(),source:el('source').value,consent:true,focus:s.focusChoice||''};
+    if(lead.name.length<2||lead.company.length<2||lead.email.length<5){status.textContent='Confira nome, empresa e e-mail antes de continuar.';return;}
+    submitBtn.disabled=true; printBtn.disabled=true;
+    steps.textContent='1/3 Validando dados...'; status.textContent='Preparando registro...';
+    s.lead=lead;s.events=s.events||[];s.events.push({type:'lead_registro_solicitado',at:new Date().toISOString()});RadarCore.set(s);
+    const payload=JSON.parse(JSON.stringify(s));
+    payload.questions=RADAR_DATA.questions.map((q,i)=>({text:q[1],dimension:RADAR_DATA.dimensions.find(d=>d.id===q[0]).name,value:s.answers[i]}));
+    steps.textContent='2/3 Enviando para o CRM...';
     const res=await RadarApi.send({action:'saveDiagnosis',session:payload});
-    if(res.ok){status.textContent='Diagnóstico registrado. Você pode salvar o relatório em PDF.';document.getElementById('leadForm').insertAdjacentHTML('beforeend',`<div class="actions"><a class="btn btn-dark" target="_blank" rel="noopener" href="${RadarCore.whatsappUrl(s)}">Levar resultado ao WhatsApp</a></div>`)}
-    else{status.textContent='Modo local: o cadastro ficou salvo nesta sessão. Configure o Google Apps Script para enviar ao CRM.'}
+    if(res.ok){
+      s.crmSavedAt=new Date().toISOString();s.crmLeadId=s.crmLeadId||'Aguardando resposta do servidor';s.crmStatus='enviado';
+      s.events.push({type:'registro_enviado_crm',at:new Date().toISOString()});RadarCore.set(s);
+      steps.textContent='3/3 Registro solicitado. O relatório está liberado.';
+      status.textContent='Cadastro registrado para processamento no CRM. Você já pode salvar o relatório em PDF.';
+      printBtn.disabled=false;
+      submitBtn.textContent='Cadastro já realizado';
+      const actions=document.querySelector('.actions');
+      if(!document.getElementById('waResult')){actions.insertAdjacentHTML('beforeend',`<a id="waResult" class="btn btn-dark" target="_blank" rel="noopener" href="${RadarCore.whatsappUrl(s)}">Levar resultado ao WhatsApp</a>`);document.getElementById('waResult').addEventListener('click',()=>{s.events=s.events||[];s.events.push({type:'whatsapp_acionado',at:new Date().toISOString()});RadarCore.set(s);RadarApi.event({type:'whatsapp_acionado',at:new Date().toISOString(),diagnosticoId:s.id,leadId:s.crmLeadId||''});});}
+    }else{
+      submitBtn.disabled=false;
+      steps.textContent='Não foi possível enviar. Verifique a conexão com o Apps Script.';
+      status.textContent='O registro não foi confirmado. Corrija o endpoint do Apps Script e tente novamente.';
+    }
   };
 })();
 </script>
