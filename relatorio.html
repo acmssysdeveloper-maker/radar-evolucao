@@ -70,6 +70,7 @@
     </div>
 
     <p class="report-summary" id="rsummary"></p>
+    <div class="report-human-note" id="reportHumanNote"></div>
 
     <div class="report-main">
       <div class="report-wheel-card">
@@ -89,7 +90,7 @@
 
     <div class="report-bottom">
       <div class="report-insight"><h3>Leitura prioritária</h3><p id="rinsight"></p></div>
-      <div class="report-next"><h3>Próximo passo</h3><p>Use este resultado como linha de base. O valor do Radar aumenta quando os pontos prioritários viram ações observáveis e são reavaliados posteriormente.</p></div>
+      <div class="report-next"><h3>Próximo passo</h3><p id="rnext"></p></div>
     </div>
     <div class="report-foot"><span>Radar de Evolução • Ferramenta de reflexão e acompanhamento</span><span id="footId"></span></div>
   </section>
@@ -99,6 +100,7 @@
 <script src="config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/core.js"></script>
+<script src="js/interpretacao.js"></script>
 <script src="js/radar-chart.js"></script>
 <script src="js/api.js"></script>
 <script>
@@ -111,9 +113,12 @@
   el('footId').textContent=s.id;
   el('rscore').textContent=RadarCore.fmt(s.scores.overall);
   el('rlevel').textContent=s.level.name;
-  el('rsummary').textContent=s.level.desc;
+  const analysis=RadarInterpretation.analyze(s.scores);
+  el('rsummary').textContent=analysis.compact;
   const sorted=RADAR_DATA.dimensions.map(d=>({d,score:Number(s.scores.dimensions[d.id]||0)})).sort((a,b)=>b.score-a.score);
-  el('rinsight').textContent=`Sua maior força relativa está em ${sorted.slice(0,2).map(x=>x.d.short.toLowerCase()).join(' e ')}. Os pontos que merecem atenção prioritária aparecem em ${sorted.slice(-3).reverse().map(x=>x.d.short.toLowerCase()).join(', ')}.`;
+  el('rinsight').textContent=analysis.reportInsight;
+  el('rnext').textContent=analysis.nextStep;
+  el('reportHumanNote').textContent=`Padrão observado: ${analysis.pattern}. Prioridades: ${analysis.priorityText}.`;
   el('dims').innerHTML=RADAR_DATA.dimensions.map(d=>{const v=Number(s.scores.dimensions[d.id]||0);return `<div class="report-dim"><span class="report-dim-name">${d.name}</span><div class="report-dim-row"><div class="report-dim-bar"><i style="width:${Math.max(0,Math.min(100,v*10))}%"></i></div><span class="report-dim-score">${RadarCore.fmt(v)}</span></div></div>`}).join('');
   RadarChart.draw('reportRadar',s.scores.dimensions,{overall:s.scores.overall,animate:false});
 

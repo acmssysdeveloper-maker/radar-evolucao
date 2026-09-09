@@ -6,6 +6,7 @@
   <h3 id="levelTitle">O que este nível significa</h3>
   <p id="summary"></p>
   <div class="result-callout"><strong id="attentionTitle">Onde olhar agora</strong><span id="attentionText"></span></div>
+  <div class="human-reading" id="humanReading"></div>
   <div class="axis-list" id="axes"></div>
 </div>
 <div class="result-card radar-wrap">
@@ -13,17 +14,19 @@
   <svg id="radar"></svg>
   <div class="wheel-footer" id="wheelFooter"></div>
 </div>
-</div><div class="result-choice" style="margin-top:18px"><label for="focusChoice"><strong>Qual ponto do resultado mais chamou sua atenção?</strong></label><select id="focusChoice"><option value="">Selecione (opcional)</option><option>Pessoas</option><option>Processos</option><option>Tecnologia e IA</option><option>Dados / Decisão</option><option>Outro ponto</option></select></div><div class="actions" style="margin-top:16px"><a class="btn btn-gold" id="reportCta" href="relatorio.html">Gerar meu relatório</a><a class="btn btn-dark" id="wa" target="_blank" rel="noopener">Falar sobre este resultado</a><a class="btn btn-secondary" href="diagnostico.html">Refazer avaliação</a></div></div></div></section></main><script src="config.js"></script><script src="js/contexto.js"></script><script src="js/data.js"></script><script src="js/core.js"></script><script src="js/radar-chart.js"></script><script src="js/api.js"></script><script>
+</div><div class="result-choice" style="margin-top:18px"><label for="focusChoice"><strong>Qual ponto do resultado mais chamou sua atenção?</strong></label><select id="focusChoice"><option value="">Selecione (opcional)</option><option>Pessoas</option><option>Processos</option><option>Tecnologia e IA</option><option>Dados / Decisão</option><option>Outro ponto</option></select></div><div class="actions" style="margin-top:16px"><a class="btn btn-gold" id="reportCta" href="relatorio.html">Gerar meu relatório</a><a class="btn btn-dark" id="wa" target="_blank" rel="noopener">Falar sobre este resultado</a><a class="btn btn-secondary" href="diagnostico.html">Refazer avaliação</a></div></div></div></section></main><script src="config.js"></script><script src="js/contexto.js"></script><script src="js/data.js"></script><script src="js/core.js"></script><script src="js/interpretacao.js"></script><script src="js/radar-chart.js"></script><script src="js/api.js"></script><script>
 (function(){
  const s=RadarCore.get();
  if(!s){document.getElementById('empty').style.display='block';document.getElementById('content').style.display='none';return}
  const score=Number(s.scores.overall||0), dimVals=s.scores.dimensions;
  document.getElementById('score').textContent=RadarCore.fmt(score);
  document.getElementById('level').textContent=s.level.name;
- document.getElementById('summary').textContent=s.level.desc;
+ const analysis=RadarInterpretation.analyze(s.scores);
+ document.getElementById('summary').textContent=analysis.compact;
  const sorted=RADAR_DATA.dimensions.map(d=>({d,score:Number(dimVals[d.id]||0)})).sort((a,b)=>b.score-a.score);
  const high=sorted.slice(0,2), low=sorted.slice(-3).reverse(), gap=sorted[0].score-sorted[sorted.length-1].score;
- document.getElementById('attentionText').textContent=` ${low[0].d.short} (${RadarCore.fmt(low[0].score)}) é o principal ponto de atenção. A maior distância interna do radar é de ${RadarCore.fmt(gap)} ponto(s).`;
+ document.getElementById('attentionText').textContent=` ${analysis.firstText} A maior distância interna do radar é de ${RadarCore.fmt(gap)} ponto(s).`;
+ document.getElementById('humanReading').innerHTML=`<div class="human-reading-title">O que o seu radar sugere</div>${analysis.humanFirst.split('\n\n').map(p=>`<p>${p}</p>`).join('')}<div class="priority-path"><strong>Ordem de observação</strong><span>${analysis.priorityText}</span></div>`;
  document.getElementById('axes').innerHTML=RADAR_DATA.dimensions.map(d=>`<div class="axis-item"><span>${d.name}</span><strong>${RadarCore.fmt(dimVals[d.id])}/10</strong></div>`).join('');
  document.getElementById('wheelFooter').textContent=`Forças relativas: ${high.map(x=>x.d.short).join(' e ')}. Pontos de atenção: ${low.map(x=>x.d.short).join(', ')}.`;
  document.getElementById('wa').href=RadarCore.whatsappUrl(s);

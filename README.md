@@ -1,4 +1,4 @@
-# Radar de Evolução 2.4.2 - versão de distribuição
+# Radar de Evolução 2.4.3 - interpretação contextual de produção
 
 O Radar de Evolução é uma ferramenta de reflexão, diagnóstico e acompanhamento. A experiência é construída para levar o participante de contexto -> diagnóstico -> resultado -> relatório -> conversa -> reavaliação.
 
@@ -44,6 +44,8 @@ Antes da divulgação ampla, valide que o endereço do Apps Script, a planilha, 
 
 Versão 2.4.2: interface de cadastro revisada com aviso de privacidade em linguagem clara; informações técnicas de CRM foram retiradas da área do participante.
 
+Versão 2.4.3: interpretação contextual humanizada adicionada sem alterar a pontuação, a persistência, a integração CRM ou a Roda de Evolução.
+
 ## Integridade de registro
 A versão 2.4.2 não considera um POST sem confirmação como CRM concluído. Após o envio, o site consulta o diagnóstico por JSONP e só libera o estado confirmado quando encontra o Diagnostico_ID no Sheets. Reenvios do mesmo diagnóstico são deduplicados no servidor. Eventos também recebem Evento_ID para evitar duplicação.
 
@@ -58,3 +60,12 @@ Todos os horários operacionais do Apps Script e do Google Sheets usam `America/
 - O site só apresenta o CRM como confirmado após consulta de status.
 - Datas do CRM usam `America/Sao_Paulo`.
 - O diagnóstico não aceita quantidade diferente de 24 respostas nem valores fora de 0 a 4.
+
+## Versão 2.4.3 — interpretação contextual
+- Mantém a pontuação e os limites da 2.4.2.
+- Adiciona um motor determinístico de interpretação em `js/interpretacao.js`.
+- A leitura começa pelo desenvolvimento humano e depois relaciona pensamento crítico, processos, dados, decisão, tecnologia, aprendizagem e inovação.
+- O resultado usa relações entre dimensões, e não apenas a menor nota isolada.
+- A linguagem evita afirmações categóricas sobre a empresa: o Radar fala em sinais, relações e pontos a investigar.
+- A mesma interpretação contextual é usada no resultado e no relatório, reduzindo divergência entre telas.
+- Não há uso de clichês promocionais ou metáforas genéricas de IA na interpretação.
