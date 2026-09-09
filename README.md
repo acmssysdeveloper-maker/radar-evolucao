@@ -1,4 +1,4 @@
-# Radar de Evolução 2.4.0 - versão de distribuição
+# Radar de Evolução 2.4.1 - versão de distribuição
 
 O Radar de Evolução é uma ferramenta de reflexão, diagnóstico e acompanhamento. A experiência é construída para levar o participante de contexto -> diagnóstico -> resultado -> relatório -> conversa -> reavaliação.
 
@@ -40,3 +40,6 @@ Os indicadores de contexto são mantidos em `js/contexto.js` e podem ser substit
 ## Política e distribuição
 
 Antes da divulgação ampla, valide que o endereço do Apps Script, a planilha, o texto de privacidade e as rotinas de atendimento correspondem à operação real.
+
+
+Versão 2.4.1: interface de cadastro revisada com aviso de privacidade em linguagem clara; informações técnicas de CRM foram retiradas da área do participante.
