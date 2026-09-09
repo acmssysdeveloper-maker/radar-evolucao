@@ -13,7 +13,7 @@
   <svg id="radar"></svg>
   <div class="wheel-footer" id="wheelFooter"></div>
 </div>
-</div><div class="result-choice" style="margin-top:18px"><label for="focusChoice"><strong>Qual ponto do resultado mais chamou sua atenção?</strong></label><select id="focusChoice"><option value="">Selecione (opcional)</option><option>Pessoas</option><option>Processos</option><option>Tecnologia e IA</option><option>Dados / Decisão</option><option>Outro ponto</option></select></div><div class="actions" style="margin-top:16px"><a class="btn btn-gold" id="reportCta" href="relatorio.html">Gerar meu relatório</a><a class="btn btn-dark" id="wa" target="_blank" rel="noopener">Falar sobre este resultado</a><a class="btn btn-secondary" href="diagnostico.html">Refazer avaliação</a></div></div></div></section></main><script src="config.js"></script><script src="js/contexto.js"></script><script src="js/data.js"></script><script src="js/core.js"></script><script src="js/radar-chart.js"></script><script>
+</div><div class="result-choice" style="margin-top:18px"><label for="focusChoice"><strong>Qual ponto do resultado mais chamou sua atenção?</strong></label><select id="focusChoice"><option value="">Selecione (opcional)</option><option>Pessoas</option><option>Processos</option><option>Tecnologia e IA</option><option>Dados / Decisão</option><option>Outro ponto</option></select></div><div class="actions" style="margin-top:16px"><a class="btn btn-gold" id="reportCta" href="relatorio.html">Gerar meu relatório</a><a class="btn btn-dark" id="wa" target="_blank" rel="noopener">Falar sobre este resultado</a><a class="btn btn-secondary" href="diagnostico.html">Refazer avaliação</a></div></div></div></section></main><script src="config.js"></script><script src="js/contexto.js"></script><script src="js/data.js"></script><script src="js/core.js"></script><script src="js/radar-chart.js"></script><script src="js/api.js"></script><script>
 (function(){
  const s=RadarCore.get();
  if(!s){document.getElementById('empty').style.display='block';document.getElementById('content').style.display='none';return}
@@ -28,8 +28,8 @@
  document.getElementById('wheelFooter').textContent=`Forças relativas: ${high.map(x=>x.d.short).join(' e ')}. Pontos de atenção: ${low.map(x=>x.d.short).join(', ')}.`;
  document.getElementById('wa').href=RadarCore.whatsappUrl(s);
  const choice=document.getElementById('focusChoice'); const savedChoice=s.focusChoice||''; choice.value=savedChoice; choice.onchange=()=>{s.focusChoice=choice.value;RadarCore.set(s);};
- document.getElementById('wa').addEventListener('click',()=>{s.events=s.events||[];s.events.push({type:'whatsapp_acionado',at:new Date().toISOString(),focus:s.focusChoice||''});RadarCore.set(s);});
- document.getElementById('reportCta').addEventListener('click',()=>{s.events=s.events||[];s.events.push({type:'relatorio_solicitado',at:new Date().toISOString(),focus:s.focusChoice||''});RadarCore.set(s);});
+ document.getElementById('wa').addEventListener('click',()=>{const at=new Date().toISOString();s.events=s.events||[];s.events.push({type:'whatsapp_acionado',at,focus:s.focusChoice||''});RadarCore.set(s);RadarApi.event({type:'whatsapp_acionado',at,diagnosticoId:s.id,leadId:s.crmLeadId||'',focus:s.focusChoice||''}).catch(()=>{});});
+ document.getElementById('reportCta').addEventListener('click',()=>{const at=new Date().toISOString();s.events=s.events||[];s.events.push({type:'relatorio_solicitado',at,focus:s.focusChoice||''});RadarCore.set(s);RadarApi.event({type:'relatorio_solicitado',at,diagnosticoId:s.id,leadId:s.crmLeadId||'',focus:s.focusChoice||''}).catch(()=>{});});
  RadarChart.draw('radar',dimVals,{overall:score});
 })();
 </script></body></html>

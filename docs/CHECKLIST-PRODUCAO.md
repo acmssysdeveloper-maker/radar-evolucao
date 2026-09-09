@@ -1,4 +1,4 @@
-# Checklist de publicação - Radar de Evolução 2.4.0
+# Checklist de publicação - Radar de Evolução 2.4.2
 
 1. Criar/abrir a planilha CRM.
 2. Colar `apps-script/Code.gs` no Apps Script ligado à planilha.
@@ -13,4 +13,5 @@
 11. Fazer uma segunda avaliação para a mesma empresa e confirmar reaproveitamento do `Lead_ID`.
 12. Imprimir o relatório em A4 e confirmar que sai em uma única página.
 13. Testar o WhatsApp e conferir a mensagem com índice, nível e pontos de atenção.
-14. Limpar dados de teste da planilha antes da distribuição.
+14. Testar horários no Brasil (site, CRM e PDF) e confirmar `America/Sao_Paulo`.
+15. Limpar dados de teste da planilha antes da distribuição.

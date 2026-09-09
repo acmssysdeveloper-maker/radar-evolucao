@@ -1,4 +1,4 @@
-# Radar de Evolução 2.4.1 - versão de distribuição
+# Radar de Evolução 2.4.2 - versão de distribuição
 
 O Radar de Evolução é uma ferramenta de reflexão, diagnóstico e acompanhamento. A experiência é construída para levar o participante de contexto -> diagnóstico -> resultado -> relatório -> conversa -> reavaliação.
 
@@ -42,4 +42,19 @@ Os indicadores de contexto são mantidos em `js/contexto.js` e podem ser substit
 Antes da divulgação ampla, valide que o endereço do Apps Script, a planilha, o texto de privacidade e as rotinas de atendimento correspondem à operação real.
 
 
-Versão 2.4.1: interface de cadastro revisada com aviso de privacidade em linguagem clara; informações técnicas de CRM foram retiradas da área do participante.
+Versão 2.4.2: interface de cadastro revisada com aviso de privacidade em linguagem clara; informações técnicas de CRM foram retiradas da área do participante.
+
+## Integridade de registro
+A versão 2.4.2 não considera um POST sem confirmação como CRM concluído. Após o envio, o site consulta o diagnóstico por JSONP e só libera o estado confirmado quando encontra o Diagnostico_ID no Sheets. Reenvios do mesmo diagnóstico são deduplicados no servidor. Eventos também recebem Evento_ID para evitar duplicação.
+
+## Horário
+Todos os horários operacionais do Apps Script e do Google Sheets usam `America/Sao_Paulo`. Execute `setup()` novamente após atualizar o Code.gs para aplicar o fuso e os formatos de data/hora.
+
+
+## Endurecimento de produção
+- Escala e classificação são recalculadas no servidor a partir das 24 respostas.
+- O mesmo Diagnostico_ID é idempotente e não cria segunda avaliação em reenvios.
+- Evento_ID evita duplicação de eventos.
+- O site só apresenta o CRM como confirmado após consulta de status.
+- Datas do CRM usam `America/Sao_Paulo`.
+- O diagnóstico não aceita quantidade diferente de 24 respostas nem valores fora de 0 a 4.

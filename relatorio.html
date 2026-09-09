@@ -107,7 +107,7 @@
   if(!s){location.href='diagnostico.html';return}
   const created=new Date(s.createdAt);
   const el=id=>document.getElementById(id);
-  el('meta').textContent=`ID ${s.id} • ${created.toLocaleDateString('pt-BR')}`;
+  el('meta').textContent=`ID ${s.id} • ${RadarCore.formatDate(s.createdAt)}`;
   el('footId').textContent=s.id;
   el('rscore').textContent=RadarCore.fmt(s.scores.overall);
   el('rlevel').textContent=s.level.name;
@@ -130,8 +130,7 @@
 
   printBtn.addEventListener('click',()=>{
     if(printBtn.disabled)return;
-    s.events=s.events||[];s.events.push({type:'pdf_imprimir_iniciado',at:new Date().toISOString()});RadarCore.set(s);
-    RadarApi.event({type:'pdf_imprimir_iniciado',at:new Date().toISOString(),diagnosticoId:s.id,leadId:s.crmLeadId||''});
+    const eventAt=new Date().toISOString(); s.events=s.events||[]; s.events.push({type:'pdf_imprimir_iniciado',at:eventAt}); RadarCore.set(s); RadarApi.event({type:'pdf_imprimir_iniciado',at:eventAt,diagnosticoId:s.id,leadId:s.crmLeadId||''}).catch(()=>{});
     window.print();
   });
 
@@ -148,17 +147,18 @@
     const payload=JSON.parse(JSON.stringify(s));
     payload.questions=RADAR_DATA.questions.map((q,i)=>({text:q[1],dimension:RADAR_DATA.dimensions.find(d=>d.id===q[0]).name,value:s.answers[i]}));
     steps.textContent='Registrando sua avaliação...';
-    const res=await RadarApi.send({action:'saveDiagnosis',session:payload});
+    const res=await RadarApi.sendDiagnosis({action:'saveDiagnosis',session:payload});
     if(res.ok){
-      s.crmSavedAt=new Date().toISOString();s.crmLeadId=s.crmLeadId||'Aguardando resposta do servidor';s.crmStatus='enviado';
+      s.crmSavedAt=new Date().toISOString();s.crmLeadId=res.leadId||s.crmLeadId;s.crmStatus='confirmado';
       s.events.push({type:'registro_enviado_crm',at:new Date().toISOString()});RadarCore.set(s);
-      steps.textContent='✓ Avaliação concluída  •  ✓ Registro realizado  •  ✓ Relatório liberado';
+      s.events.push({type:'pdf_relatorio_liberado',at:new Date().toISOString()}); RadarCore.set(s); RadarApi.event({type:'pdf_relatorio_liberado',at:new Date().toISOString(),diagnosticoId:s.id,leadId:s.crmLeadId||''}).catch(()=>{});
+      steps.textContent='✓ Avaliação concluída  •  ✓ Registro confirmado  •  ✓ Relatório liberado';
       status.textContent='Seu relatório está liberado. Você já pode salvá-lo em PDF.';
       status.classList.add('success');
       printBtn.disabled=false;
       submitBtn.textContent='Cadastro já realizado';
       const actions=document.querySelector('.actions');
-      if(!document.getElementById('waResult')){actions.insertAdjacentHTML('beforeend',`<a id="waResult" class="btn btn-dark" target="_blank" rel="noopener" href="${RadarCore.whatsappUrl(s)}">Levar resultado ao WhatsApp</a>`);document.getElementById('waResult').addEventListener('click',()=>{s.events=s.events||[];s.events.push({type:'whatsapp_acionado',at:new Date().toISOString()});RadarCore.set(s);RadarApi.event({type:'whatsapp_acionado',at:new Date().toISOString(),diagnosticoId:s.id,leadId:s.crmLeadId||''});});}
+      if(!document.getElementById('waResult')){actions.insertAdjacentHTML('beforeend',`<a id="waResult" class="btn btn-dark" target="_blank" rel="noopener" href="${RadarCore.whatsappUrl(s)}">Levar resultado ao WhatsApp</a>`);document.getElementById('waResult').addEventListener('click',()=>{const at=new Date().toISOString();s.events=s.events||[];s.events.push({type:'whatsapp_acionado',at});RadarCore.set(s);RadarApi.event({type:'whatsapp_acionado',at,diagnosticoId:s.id,leadId:s.crmLeadId||''}).catch(()=>{});});}
     }else{
       submitBtn.disabled=false;
       steps.textContent='Não foi possível concluir o registro.';

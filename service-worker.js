@@ -1,4 +1,4 @@
-const CACHE='radar-evolucao-v2-4-0';
+const CACHE='radar-evolucao-v2-4-2';
 const ASSETS=['./','./index.html','./sobre.html','./radar.html','./diagnostico.html','./resultado.html','./relatorio.html','./contato.html','./privacidade.html','./config.js','./css/styles.css','./js/data.js','./js/core.js','./js/api.js','./js/contexto.js','./manifest.webmanifest','./assets/icon-192.svg','./assets/icon-512.svg','./assets/pdf-showcase.png','./assets/pdf-showcase-full.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

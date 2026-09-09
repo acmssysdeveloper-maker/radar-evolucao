@@ -4,7 +4,7 @@
   function set(v){localStorage.setItem(KEY,JSON.stringify(v))}
   function createId(){
     const suffix=(window.crypto&&typeof crypto.randomUUID==='function')?crypto.randomUUID().split('-')[0].toUpperCase():Math.random().toString(36).slice(2,8).toUpperCase();
-    return 'RE-'+new Date().getFullYear()+'-'+suffix;
+    const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric'}).formatToParts(new Date()); const year=parts.find(p=>p.type==='year')?.value||new Date().getFullYear(); return 'RE-'+year+'-'+suffix;
   }
   function scoreLevel(score){
     const s=Number(score)||0;
@@ -35,6 +35,6 @@
     const focus=session.focusChoice?` O ponto que mais me chamou atenção foi ${session.focusChoice}.`:''; const msg=`Olá, Antonio Cesar. Fiz o Radar de Evolução da minha empresa. ID ${session.id}. Resultado geral: ${fmt(session.scores.overall)}/10 - nível ${session.level.name}. Meus principais pontos de atenção foram ${session.insight.low.slice(0,3).map(x=>x.d.short).join(', ')}.${focus} Gostaria de conversar sobre o resultado.`;
     return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
   }
-  function fmt(n){return Number(n||0).toFixed(1).replace('.',',')}
-  window.RadarCore={KEY,get,set,createId,scoreLevel,scoresFromAnswers,insight,serialize,deserialize,whatsappUrl,fmt};
+  function fmt(n){return Number(n||0).toFixed(1).replace('.',',')} function formatDate(date,withTime=false){return new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',dateStyle:'short',...(withTime?{timeStyle:'short'}:{})}).format(new Date(date))}
+  window.RadarCore={KEY,get,set,createId,scoreLevel,scoresFromAnswers,insight,serialize,deserialize,whatsappUrl,fmt,formatDate};
 })();
